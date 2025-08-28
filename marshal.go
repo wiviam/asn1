@@ -377,6 +377,7 @@ func makeUTCTime(t time.Time) (e encoder, err error) {
 }
 
 func makeGeneralizedTime(t time.Time) (e encoder, err error) {
+	t = t.UTC() // 确保时间为 UTC
 	dst := make([]byte, 0, 20)
 
 	dst, err = appendGeneralizedTime(dst, t)
@@ -410,7 +411,23 @@ func appendGeneralizedTime(dst []byte, t time.Time) (ret []byte, err error) {
 
 	dst = appendFourDigits(dst, year)
 
-	return appendTimeCommon(dst, t), nil
+	dst = appendTimeCommon(dst, t)
+
+	// 如果时间有子秒精度（纳秒非零），添加毫秒（3 位小数）
+	if t.Nanosecond() > 0 {
+		// 计算毫秒：1 毫秒 = 1,000,000 纳秒
+		millis := t.Nanosecond() / 1_000_000
+		// 格式化为 .XXX（3 位小数）
+		dst = append(dst, '.')
+		dst = append(dst, byte('0'+(millis/100)%10))
+		dst = append(dst, byte('0'+(millis/10)%10))
+		dst = append(dst, byte('0'+millis%10))
+	}
+
+	// 添加时区 'Z'（GeneralizedTime 要求 UTC）
+	dst = append(dst, 'Z')
+
+	return dst, nil
 }
 
 func appendTimeCommon(dst []byte, t time.Time) []byte {

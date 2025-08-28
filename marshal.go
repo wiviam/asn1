@@ -411,7 +411,15 @@ func appendGeneralizedTime(dst []byte, t time.Time) (ret []byte, err error) {
 
 	dst = appendFourDigits(dst, year)
 
-	dst = appendTimeCommon(dst, t)
+	// 添加月日时分秒部分，但不包含时区
+	_, month, day := t.Date()
+	dst = appendTwoDigits(dst, int(month))
+	dst = appendTwoDigits(dst, day)
+
+	hour, min, sec := t.Clock()
+	dst = appendTwoDigits(dst, hour)
+	dst = appendTwoDigits(dst, min)
+	dst = appendTwoDigits(dst, sec)
 
 	// 如果时间有子秒精度（纳秒非零），添加毫秒（3 位小数）
 	if t.Nanosecond() > 0 {

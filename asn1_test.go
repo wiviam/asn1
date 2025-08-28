@@ -1216,3 +1216,40 @@ func TestImplicitTypeRoundtrip(t *testing.T) {
 		t.Fatalf("Unexpected diff after roundtripping struct\na: %#v\nb: %#v", a, b)
 	}
 }
+
+func TestGeneralizedTimeWithMillis(t *testing.T) {
+	// 测试时间：2025-08-28 22:38:12.123 UTC
+	t0 := time.Date(2025, time.August, 28, 22, 38, 12, 123_000_000, time.UTC)
+	data, err := Marshal(t0)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+
+	var t1 time.Time
+	_, err = Unmarshal(data, &t1)
+	if err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	// 比较毫秒精度
+	if t1.Format("20060102150405.000Z") != "20250828223812.123Z" {
+		t.Errorf("Time mismatch: got %v, want 20250828223812.123Z", t1.Format("20060102150405.000Z"))
+	}
+
+	// 测试无子秒精度
+	t2 := time.Date(2025, time.August, 28, 22, 38, 12, 0, time.UTC)
+	data, err = Marshal(t2)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+
+	var t3 time.Time
+	_, err = Unmarshal(data, &t3)
+	if err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	if t3.Format("20060102150405Z") != "20250828223812Z" {
+		t.Errorf("Time mismatch: got %v, want 20250828223812Z", t3.Format("20060102150405Z"))
+	}
+}

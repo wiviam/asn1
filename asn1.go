@@ -746,7 +746,7 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 			case TagUTCTime:
 				result, err = parseUTCTime(innerBytes)
 			case TagGeneralizedTime:
-				result, err = parseGeneralizedTime(innerBytes)
+				result, err = ParseGeneralizedTime(innerBytes)
 			case TagOctetString:
 				result = innerBytes
 			case TagBMPString:
@@ -903,7 +903,7 @@ func parseField(v reflect.Value, bytes []byte, initOffset int, params fieldParam
 			*v, err = parseUTCTime(innerBytes)
 			return
 		}
-		*v, err = parseGeneralizedTime(innerBytes)
+		*v, err = ParseGeneralizedTime(innerBytes)
 		return
 	case *Enumerated:
 		parsedInt, err1 := parseInt32(innerBytes)
